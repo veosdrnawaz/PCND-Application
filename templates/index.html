@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pak Currency Note Distribution</title>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo-container">
+                <img src="/static/logo.png" alt="App Logo" class="splash-logo" onerror="this.src='https://img.icons8.com/color/144/pakistan.png';">
+            </div>
+            <h1 class="splash-title">Pak Currency Note Distribution</h1>
+            <p class="splash-tagline">Smart Currency Distribution using AI</p>
+            <div class="splash-loader">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden initially, shown after Splash) -->
+    <div id="app-container" class="app-container hidden">
+        
+        <!-- Top App Bar -->
+        <header class="top-app-bar">
+            <div class="header-left">
+                <div class="header-logo">
+                    <img src="/static/logo.png" alt="App Logo" class="app-small-logo" onerror="this.src='https://img.icons8.com/color/48/pakistan.png';">
+                </div>
+                <div class="header-titles">
+                    <h2 class="app-title">Pak Currency Note Distribution</h2>
+                    <p class="app-subtitle">AI Powered Note Prediction</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="theme-toggle-btn" class="icon-button" aria-label="Toggle Theme">
+                    <span class="material-symbols-rounded">dark_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- 🏠 HOME SCREEN -->
+            <section id="screen-home" class="app-screen active">
+                <div class="screen-scrollable">
+                    <div class="hero-banner">
+                        <div class="hero-accent-circle"></div>
+                        <div class="hero-text">
+                            <h3>Predict Note Denominations</h3>
+                            <p>Enter an amount in PKR, and our trained regressor model will predict the optimal note split with mathematical guarantees.</p>
+                        </div>
+                    </div>
+
+                    <!-- Input Card -->
+                    <div class="md-card input-card">
+                        <div class="input-field-container">
+                            <label for="amount-input" class="input-label">Enter Amount (PKR)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-prefix">Rs.</span>
+                                <input type="number" id="amount-input" placeholder="e.g. 5000" min="10" step="10" inputmode="numeric">
+                            </div>
+                            <span class="input-helper">Must be a whole number, greater than zero, and divisible by 10.</span>
+                        </div>
+
+                        <!-- Error State Card (Hidden by default) -->
+                        <div id="error-card" class="md-card error-card hidden">
+                            <span class="material-symbols-rounded error-icon">error</span>
+                            <div class="error-text-container">
+                                <h4 class="error-title">Invalid Input</h4>
+                                <p id="error-message">Please enter an amount divisible by 10.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button id="predict-btn" class="btn btn-primary btn-large">
+                                <span class="material-symbols-rounded">calculate</span>
+                                <span class="btn-text">Predict Notes</span>
+                            </button>
+                            <button id="reset-btn" class="btn btn-outlined">
+                                <span class="material-symbols-rounded">restart_alt</span>
+                                <span>Reset</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State Card (Hidden by default) -->
+                    <div id="loading-card" class="loading-overlay hidden">
+                        <div class="loading-content">
+                            <div class="circular-progress"></div>
+                            <p class="loading-text">Predicting Note Distribution...</p>
+                        </div>
+                    </div>
+
+                    <!-- 📊 RESULT SCREEN SECTION (Appears below input upon success) -->
+                    <div id="result-section" class="result-section hidden">
+                        
+                        <!-- Status Success/Error Card -->
+                        <div id="status-card" class="md-card status-card success">
+                            <span class="material-symbols-rounded status-icon">check_circle</span>
+                            <div class="status-content">
+                                <h4 id="status-title">Distribution Generated Successfully</h4>
+                                <p id="status-subtitle">ML model prediction validated & balanced.</p>
+                            </div>
+                        </div>
+
+                        <!-- Notes Grid Layout -->
+                        <h4 class="section-title">Required Denominations</h4>
+                        <div class="notes-grid">
+                            <!-- 1000 Card -->
+                            <div class="note-card" data-denom="1000">
+                                <div class="note-card-badge">Rs. 1000</div>
+                                <div class="note-card-body">
+                                    <div class="note-icon-wrapper red-accent">
+                                        <span class="material-symbols-rounded">payments</span>
+                                    </div>
+                                    <div class="note-info">
+                                        <span class="note-count" id="count-1000">0</span>
+                                        <span class="note-label" id="label-1000">Notes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 500 Card -->
+                            <div class="note-card" data-denom="500">
+                                <div class="note-card-badge">Rs. 500</div>
+                                <div class="note-card-body">
+                                    <div class="note-icon-wrapper green-accent">
+                                        <span class="material-symbols-rounded">payments</span>
+                                    </div>
+                                    <div class="note-info">
+                                        <span class="note-count" id="count-500">0</span>
+                                        <span class="note-label" id="label-500">Notes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 100 Card -->
+                            <div class="note-card" data-denom="100">
+                                <div class="note-card-badge">Rs. 100</div>
+                                <div class="note-card-body">
+                                    <div class="note-icon-wrapper orange-accent">
+                                        <span class="material-symbols-rounded">payments</span>
+                                    </div>
+                                    <div class="note-info">
+                                        <span class="note-count" id="count-100">0</span>
+                                        <span class="note-label" id="label-100">Notes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 50 Card -->
+                            <div class="note-card" data-denom="50">
+                                <div class="note-card-badge">Rs. 50</div>
+                                <div class="note-card-body">
+                                    <div class="note-icon-wrapper purple-accent">
+                                        <span class="material-symbols-rounded">payments</span>
+                                    </div>
+                                    <div class="note-info">
+                                        <span class="note-count" id="count-50">0</span>
+                                        <span class="note-label" id="label-50">Notes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 20 Card -->
+                            <div class="note-card" data-denom="20">
+                                <div class="note-card-badge">Rs. 20</div>
+                                <div class="note-card-body">
+                                    <div class="note-icon-wrapper blue-accent">
+                                        <span class="material-symbols-rounded">payments</span>
+                                    </div>
+                                    <div class="note-info">
+                                        <span class="note-count" id="count-20">0</span>
+                                        <span class="note-label" id="label-20">Notes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 10 Card -->
+                            <div class="note-card" data-denom="10">
+                                <div class="note-card-badge">Rs. 10</div>
+                                <div class="note-card-body">
+                                    <div class="note-icon-wrapper teal-accent">
+                                        <span class="material-symbols-rounded">payments</span>
+                                    </div>
+                                    <div class="note-info">
+                                        <span class="note-count" id="count-10">0</span>
+                                        <span class="note-label" id="label-10">Notes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary Validation Card -->
+                        <div class="md-card summary-card">
+                            <h4 class="card-title">Validation Audit</h4>
+                            <div class="summary-row">
+                                <span class="summary-label">Entered Amount:</span>
+                                <span class="summary-value" id="val-entered">Rs. 0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Calculated Total:</span>
+                                <span class="summary-value" id="val-calculated">Rs. 0</span>
+                            </div>
+                            <div class="summary-row border-top">
+                                <span class="summary-label">Difference:</span>
+                                <span class="summary-value success-text" id="val-diff">Rs. 0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">API Status:</span>
+                                <span class="summary-value" id="val-api-status">Direct Prediction</span>
+                            </div>
+                            <div id="validation-badge" class="validation-badge">
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>Verification Successful: Difference is 0</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- 📜 HISTORY SCREEN -->
+            <section id="screen-history" class="app-screen">
+                <div class="screen-scrollable">
+                    <div class="screen-header">
+                        <h3 class="screen-title">Prediction History</h3>
+                        <p class="screen-desc">Access local logs of previous currency distributions.</p>
+                    </div>
+
+                    <!-- History Empty State -->
+                    <div id="history-empty" class="empty-state">
+                        <span class="material-symbols-rounded empty-icon">history</span>
+                        <h4>No History Yet</h4>
+                        <p>Perform a note distribution prediction on the home screen to log it here.</p>
+                    </div>
+
+                    <!-- History List -->
+                    <div id="history-list" class="history-list">
+                        <!-- History items generated dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- Floating Action Button to Clear History -->
+                <button id="clear-history-fab" class="fab hidden" aria-label="Clear All History">
+                    <span class="material-symbols-rounded">delete_sweep</span>
+                </button>
+            </section>
+
+            <!-- 📄 EXPORT SCREEN -->
+            <section id="screen-export" class="app-screen">
+                <div class="screen-scrollable">
+                    <div class="screen-header">
+                        <h3 class="screen-title">Export & Share</h3>
+                        <p class="screen-desc">Export note distributions and summaries for bookkeeping.</p>
+                    </div>
+
+                    <div id="export-active-warning" class="empty-state">
+                        <span class="material-symbols-rounded empty-icon">warning</span>
+                        <h4>No Active Prediction</h4>
+                        <p>Predict note counts on the home screen first, then return here to export the results.</p>
+                    </div>
+
+                    <div id="export-options" class="export-options hidden">
+                        <!-- Current Export Detail Card -->
+                        <div class="md-card current-export-card">
+                            <span class="badge">Active Record</span>
+                            <h3>Current Distribution</h3>
+                            <p class="export-amount" id="export-amount-text">Rs. 0</p>
+                            <p id="export-meta-text">Generated just now</p>
+                        </div>
+
+                        <!-- Export Cards Grid -->
+                        <div class="export-grid">
+                            <div class="export-card" id="export-pdf-btn">
+                                <div class="export-card-icon pdf-color">
+                                    <span class="material-symbols-rounded">picture_as_pdf</span>
+                                </div>
+                                <div class="export-card-info">
+                                    <h4>Export as PDF</h4>
+                                    <p>Download a styled PDF receipt of this distribution.</p>
+                                </div>
+                            </div>
+
+                            <div class="export-card" id="export-csv-btn">
+                                <div class="export-card-icon csv-color">
+                                    <span class="material-symbols-rounded">csv</span>
+                                </div>
+                                <div class="export-card-info">
+                                    <h4>Export as CSV</h4>
+                                    <p>Download a comma-separated values file compatible with Excel.</p>
+                                </div>
+                            </div>
+
+                            <div class="export-card" id="share-btn">
+                                <div class="export-card-icon share-color">
+                                    <span class="material-symbols-rounded">share</span>
+                                </div>
+                                <div class="export-card-info">
+                                    <h4>Share Result</h4>
+                                    <p>Copy distribution text to clipboard to paste in chats.</p>
+                                </div>
+                            </div>
+
+                            <div class="export-card" id="print-btn">
+                                <div class="export-card-icon print-color">
+                                    <span class="material-symbols-rounded">print</span>
+                                </div>
+                                <div class="export-card-info">
+                                    <h4>Print Result</h4>
+                                    <p>Send details to a local printer or system print utility.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ⚙ SETTINGS SCREEN -->
+            <section id="screen-settings" class="app-screen">
+                <div class="screen-scrollable">
+                    <div class="screen-header">
+                        <h3 class="screen-title">Settings</h3>
+                        <p class="screen-desc">Manage theme preferences and application parameters.</p>
+                    </div>
+
+                    <!-- Theme Card -->
+                    <div class="md-card settings-card">
+                        <h4 class="settings-section-title">Appearance</h4>
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <span class="material-symbols-rounded settings-icon">palette</span>
+                                <div class="settings-row-text">
+                                    <span class="setting-name">Dark Mode</span>
+                                    <span class="setting-desc">Switch application styling to dark mode</span>
+                                </div>
+                            </div>
+                            <div class="settings-row-right">
+                                <label class="switch">
+                                    <input type="checkbox" id="dark-mode-toggle">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info/About Card -->
+                    <div class="md-card settings-card">
+                        <h4 class="settings-section-title">Application Info</h4>
+                        <div class="settings-row" id="about-app-btn">
+                            <div class="settings-row-left">
+                                <span class="material-symbols-rounded settings-icon">info</span>
+                                <div class="settings-row-text">
+                                    <span class="setting-name">About Application</span>
+                                    <span class="setting-desc">Developer details, technology used</span>
+                                </div>
+                            </div>
+                            <div class="settings-row-right">
+                                <span class="material-symbols-rounded chevron">chevron_right</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-row" id="terms-btn">
+                            <div class="settings-row-left">
+                                <span class="material-symbols-rounded settings-icon">gavel</span>
+                                <div class="settings-row-text">
+                                    <span class="setting-name">Terms & Conditions</span>
+                                    <span class="setting-desc">Legal details and distribution rules</span>
+                                </div>
+                            </div>
+                            <div class="settings-row-right">
+                                <span class="material-symbols-rounded chevron">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version Details -->
+                    <div class="settings-version">
+                        <p>Pak Currency Note Distribution App</p>
+                        <p>v1.0.0 (Material Design 3 Update)</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="bottom-navigation">
+            <button class="nav-item active" data-screen="home">
+                <span class="material-symbols-rounded nav-icon">home</span>
+                <span class="nav-label">Home</span>
+            </button>
+            <button class="nav-item" data-screen="history">
+                <span class="material-symbols-rounded nav-icon">history</span>
+                <span class="nav-label">History</span>
+            </button>
+            <button class="nav-item" data-screen="export">
+                <span class="material-symbols-rounded nav-icon">ios_share</span>
+                <span class="nav-label">Export</span>
+            </button>
+            <button class="nav-item" data-screen="settings">
+                <span class="material-symbols-rounded nav-icon">settings</span>
+                <span class="nav-label">Settings</span>
+            </button>
+        </nav>
+
+        <!-- Modals -->
+        
+        <!-- About App Modal -->
+        <div id="about-modal" class="modal-overlay hidden">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3>About Application</h3>
+                    <button class="close-modal-btn icon-button" data-modal="about-modal">
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                </div>
+                <div class="modal-body scrollable">
+                    <div class="about-logo-area">
+                        <img src="/static/logo.png" alt="App Logo" class="about-logo" onerror="this.src='https://img.icons8.com/color/96/pakistan.png';">
+                        <h4>Pak Currency Note Distribution</h4>
+                        <p class="version-label">v1.0.0</p>
+                    </div>
+                    <p class="about-description">
+                        This application predicts the number of Pakistani currency notes required for a user-entered amount. It implements a Scikit-learn multi-output regressor on the backend and enforces a strict mathematical rule engine to guarantee 100% correct distributions.
+                    </p>
+                    <h5>Technologies Used</h5>
+                    <ul class="tech-list">
+                        <li><strong>Machine Learning:</strong> RandomForestRegressor, MultiOutputRegressor</li>
+                        <li><strong>Backend API:</strong> FastAPI, Uvicorn, Python</li>
+                        <li><strong>Frontend Architecture:</strong> Material Design 3, HTML5, CSS Grid & Flexbox, Vanilla JavaScript</li>
+                    </ul>
+                    <h5>Developer Info</h5>
+                    <p class="dev-info">Developed for Khalil Ahmad (@veosdrnawaz).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms Modal -->
+        <div id="terms-modal" class="modal-overlay hidden">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3>Distribution Rules & Terms</h3>
+                    <button class="close-modal-btn icon-button" data-modal="terms-modal">
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                </div>
+                <div class="modal-body scrollable">
+                    <p>The note distributions generated by this application follow a strict fixed algorithm hierarchy:</p>
+                    <ol class="terms-rules-list">
+                        <li><strong>Rs.10 Rule:</strong> Try to include at least one Rs.10 note whenever possible.</li>
+                        <li><strong>Rs.20 Rule:</strong> Then include Rs.20 notes if possible.</li>
+                        <li><strong>Rs.50 Rule:</strong> Then include exactly one Rs.50 note if possible.</li>
+                        <li><strong>Rs.100 Rule:</strong> Then include Rs.100 notes.</li>
+                        <li><strong>Rs.500 Rule:</strong> Then include Rs.500 notes.</li>
+                        <li><strong>Rs.1000 Rule:</strong> Fill the remaining amount using Rs.1000 notes.</li>
+                    </ol>
+                    <p>All distributions satisfy the fundamental cash equation:</p>
+                    <div class="equation-box">
+                        1000*n1000 + 500*n500 + 100*n100 + 50*n50 + 20*n20 + 10*n10 = Amount
+                    </div>
+                    <p>Predictions are adjusted in real-time by the FastAPI server to ensure the difference between the entered amount and total note value is exactly zero.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications (Dynamic popup notification) -->
+        <div id="toast-container" class="toast-container"></div>
+
+    </div>
+
+</body>
+</html>
